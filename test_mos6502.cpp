@@ -64,7 +64,7 @@ int main()
 
 	while (execute)
 	{
-		cpu.Run(100, cycleCount, StatusWrite);
+		cpu.Run(1, cycleCount, StatusWrite, mos6502::INST_COUNT);
 	}
 
 }
