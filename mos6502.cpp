@@ -878,6 +878,7 @@ void mos6502::NMI()
 void mos6502::Run(
 	int32_t cyclesRemaining,
 	uint64_t& cycleCount,
+	StatusWrite w,
 	CycleMethod cycleMethod
 ) {
 	uint8_t opcode;
@@ -885,10 +886,12 @@ void mos6502::Run(
 
 	while (cyclesRemaining > 0 && !illegalOpcode)
 	{
-		cout << std::hex << (int)pc;
+		auto prevpc = pc;
+
 		// fetch
 		opcode = Read(pc++);
-		cout << " " << std::hex << (int)opcode << endl;
+
+		w(prevpc, sp, status, A, X, Y, opcode, illegalOpcode);
 
 		// decode
 		instr = InstrTable[opcode];

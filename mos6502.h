@@ -66,6 +66,9 @@ private:
 		uint8_t cycles;
 	};
 
+	typedef void (*StatusWrite)(uint16_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, bool);
+
+
 	Instr InstrTable[256];
 
 	void Exec(Instr i);
@@ -187,5 +190,6 @@ public:
 	void Run(
 		int32_t cycles,
 		uint64_t& cycleCount,
+		StatusWrite w,
 		CycleMethod cycleMethod = CYCLE_COUNT);
 };
