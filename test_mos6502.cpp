@@ -10,7 +10,8 @@
 uint8_t ram[0x10000];
 bool execute = true;
 uint16_t maxpc = 0;
-uint16_t minpc = 0xFFFF;
+
+#define END_OF_MAIN 0x346c
 
 uint8_t MemoryRead(uint16_t address)
 {
@@ -24,22 +25,14 @@ void MemoryWrite(uint16_t address, uint8_t value)
 
 void StatusWrite(uint16_t pc, uint8_t sp, uint8_t status, uint8_t A, uint8_t X, uint8_t Y, uint8_t opcode, bool illegalOpcode)
 {
-	if (pc > maxpc)
+	if (pc > maxpc && pc < END_OF_MAIN)
 		maxpc = pc;
 
-	if (pc < minpc)
-		minpc = pc;
-
-	if (opcode == 0x40 || opcode == 0x60)
-	{
-		maxpc = 0;
-		minpc = 0xFFFF;
-	}
+	if (pc == END_OF_MAIN)
+		execute = false;
 
 	cout << "PC:";
 	cout << std::setw(4) << std::setfill('0') << std::hex << (int)pc;
-	cout << " MINPC:";
-	cout << std::setw(4) << std::setfill('0') << std::hex << (int)minpc;
 	cout << " MAXPC:";
 	cout << std::setw(4) << std::setfill('0') << std::hex << (int)maxpc;
 	cout << " | SP:";
@@ -54,6 +47,14 @@ void StatusWrite(uint16_t pc, uint8_t sp, uint8_t status, uint8_t A, uint8_t X, 
 	cout << std::setw(2) << std::hex << (int)Y;
 	cout << " | Op:";
 	cout << std::setw(2) << std::hex << (int)opcode << endl;
+
+	if (pc == 0x3343 && ram[0x000d] > 0xFE)
+		cout << std::setw(4) << std::setfill('0') << std::hex << (int)ram[0x000d] << "============================================================" << endl;
+
+	if (pc == 0x3345)
+		cout << "============================================================" << endl;
+
+
 	execute = !illegalOpcode;
 }
 
@@ -84,6 +85,5 @@ int main()
 	{
 		cpu.Run(1, cycleCount, StatusWrite, mos6502::INST_COUNT);
 	}
-
 }
 
