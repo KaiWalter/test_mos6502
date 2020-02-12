@@ -892,7 +892,7 @@ uint8_t olc6502::BPL()
 // Function:    Program Sourced Interrupt
 uint8_t olc6502::BRK()
 {
-	pc++;
+	//pc++;    -- duplicate to IMM()
 	
 	write(0x0100 + stkp, (pc >> 8) & 0x00FF);
 	stkp--;

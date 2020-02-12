@@ -47,13 +47,13 @@ void StatusWrite(uint16_t pc, uint8_t sp, uint8_t status, uint8_t A, uint8_t X, 
 
 	}
 
-	if (pc == 0x09ce)
+	if(ram[0x1fe]== 0xd2)
 		int magic = 42;
 
-	if(ram[0x01fd] == 0x34)
+	if (pc == 0x09cf)
 		int magic = 42;
 
-	if (pc == 0x37c4)
+	if (pc == 0x37df)
 		int magic = 42;
 
 	if (pc == END_OF_MAIN)
