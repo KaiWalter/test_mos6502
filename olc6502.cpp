@@ -80,7 +80,7 @@ olc6502::olc6502()
 	// Assembles the translation table. It's big, it's ugly, but it yields a convenient way
 	// to emulate the 6502. I'm certain there are some "code-golf" strategies to reduce this
 	// but I've deliberately kept it verbose for study and alteration
-	
+
 	// It is 16x16 entries. This gives 256 instructions. It is arranged to that the bottom
 	// 4 bits of the instruction choose the column, and the top 4 bits choose the row.
 
@@ -89,7 +89,7 @@ olc6502::olc6502()
 
 	// The table is one big initialiser list of initialiser lists...
 	using a = olc6502;
-	lookup = 
+	lookup =
 	{
 		{ "BRK", &a::BRK, &a::IMM, 7 },{ "ORA", &a::ORA, &a::IZX, 6 },{ "???", &a::XXX, &a::IMP, 2 },{ "???", &a::XXX, &a::IMP, 8 },{ "???", &a::NOP, &a::IMP, 3 },{ "ORA", &a::ORA, &a::ZP0, 3 },{ "ASL", &a::ASL, &a::ZP0, 5 },{ "???", &a::XXX, &a::IMP, 5 },{ "PHP", &a::PHP, &a::IMP, 3 },{ "ORA", &a::ORA, &a::IMM, 2 },{ "ASL", &a::ASL, &a::IMP, 2 },{ "???", &a::XXX, &a::IMP, 2 },{ "???", &a::NOP, &a::IMP, 4 },{ "ORA", &a::ORA, &a::ABS, 4 },{ "ASL", &a::ASL, &a::ABS, 6 },{ "???", &a::XXX, &a::IMP, 6 },
 		{ "BPL", &a::BPL, &a::REL, 2 },{ "ORA", &a::ORA, &a::IZY, 5 },{ "???", &a::XXX, &a::IMP, 2 },{ "???", &a::XXX, &a::IMP, 8 },{ "???", &a::NOP, &a::IMP, 4 },{ "ORA", &a::ORA, &a::ZPX, 4 },{ "ASL", &a::ASL, &a::ZPX, 6 },{ "???", &a::XXX, &a::IMP, 6 },{ "CLC", &a::CLC, &a::IMP, 2 },{ "ORA", &a::ORA, &a::ABY, 4 },{ "???", &a::NOP, &a::IMP, 2 },{ "???", &a::XXX, &a::IMP, 7 },{ "???", &a::NOP, &a::IMP, 4 },{ "ORA", &a::ORA, &a::ABX, 4 },{ "ASL", &a::ASL, &a::ABX, 7 },{ "???", &a::XXX, &a::IMP, 7 },
@@ -271,10 +271,10 @@ void olc6502::clock()
 #ifdef LOGMODE
 		uint16_t log_pc = pc;
 #endif
-		
+
 		// Always set the unused status flag bit to 1
 		//SetFlag(U, true);
-		
+
 		// Increment program counter, we read the opcode byte
 		pc++;
 
@@ -303,14 +303,14 @@ void olc6502::clock()
 		if (logfile != nullptr)
 		{
 			fprintf(logfile, "%10d:%02d PC:%04X %s A:%02X X:%02X Y:%02X %s%s%s%s%s%s%s%s STKP:%02X\n",
-				clock_count, 0, log_pc, "XXX", a, x, y,	
-				GetFlag(N) ? "N" : ".",	GetFlag(V) ? "V" : ".",	GetFlag(U) ? "U" : ".",	
-				GetFlag(B) ? "B" : ".",	GetFlag(D) ? "D" : ".",	GetFlag(I) ? "I" : ".",	
-				GetFlag(Z) ? "Z" : ".",	GetFlag(C) ? "C" : ".",	stkp);
+				clock_count, 0, log_pc, "XXX", a, x, y,
+				GetFlag(N) ? "N" : ".", GetFlag(V) ? "V" : ".", GetFlag(U) ? "U" : ".",
+				GetFlag(B) ? "B" : ".", GetFlag(D) ? "D" : ".", GetFlag(I) ? "I" : ".",
+				GetFlag(Z) ? "Z" : ".", GetFlag(C) ? "C" : ".", stkp);
 		}
 #endif
 	}
-	
+
 	// Increment global clock count - This is actually unused unless logging is enabled
 	// but I've kept it in because its a handy watch variable for debugging
 	clock_count++;
@@ -375,7 +375,7 @@ uint8_t olc6502::IMP()
 // the read address to point to the next byte
 uint8_t olc6502::IMM()
 {
-	addr_abs = pc++;	
+	addr_abs = pc++;
 	return 0;
 }
 
@@ -387,7 +387,7 @@ uint8_t olc6502::IMM()
 // one byte instead of the usual two.
 uint8_t olc6502::ZP0()
 {
-	addr_abs = read(pc);	
+	addr_abs = read(pc);
 	pc++;
 	addr_abs &= 0x00FF;
 	return 0;
@@ -465,7 +465,7 @@ uint8_t olc6502::ABX()
 	if ((addr_abs & 0xFF00) != (hi << 8))
 		return 1;
 	else
-		return 0;	
+		return 0;
 }
 
 
@@ -516,7 +516,7 @@ uint8_t olc6502::IND()
 	{
 		addr_abs = (read(ptr + 1) << 8) | read(ptr + 0);
 	}
-	
+
 	return 0;
 }
 
@@ -534,7 +534,7 @@ uint8_t olc6502::IZX()
 	uint16_t hi = read((uint16_t)(t + (uint16_t)x + 1) & 0x00FF);
 
 	addr_abs = (hi << 8) | lo;
-	
+
 	return 0;
 }
 
@@ -554,7 +554,7 @@ uint8_t olc6502::IZY()
 
 	addr_abs = (hi << 8) | lo;
 	addr_abs += y;
-	
+
 	if ((addr_abs & 0xFF00) != (hi << 8))
 		return 1;
 	else
@@ -660,11 +660,11 @@ uint8_t olc6502::ADC()
 {
 	// Grab the data that we are adding to the accumulator
 	fetch();
-	
+
 	// Add is performed in 16-bit domain for emulation to capture any
 	// carry bit, which will exist in bit 8 of the 16-bit word
 	temp = (uint16_t)a + (uint16_t)fetched + (uint16_t)GetFlag(C);
-	
+
 	// The Zero flag is set if the result is 0
 	SetFlag(Z, (temp & 0x00FF) == 0);
 
@@ -698,7 +698,7 @@ uint8_t olc6502::ADC()
 
 	// Load the result into the accumulator (it's 8-bit dont forget!)
 	a = temp & 0x00FF;
-	
+
 	// This instruction has the potential to require an additional clock cycle
 	return 1;
 }
@@ -733,18 +733,29 @@ uint8_t olc6502::ADC()
 uint8_t olc6502::SBC()
 {
 	fetch();
-	
+
 	// Operating in 16-bit domain to capture carry out
-	
-	// We can invert the bottom 8 bits with bitwise xor
-	uint16_t value = ((uint16_t)fetched) ^ 0x00FF;
-	
-	// Notice this is exactly the same as addition from here!
-	temp = (uint16_t)a + value + (uint16_t)GetFlag(C);
-	SetFlag(C, temp & 0xFF00);
-	SetFlag(Z, ((temp & 0x00FF) == 0));
-	SetFlag(V, (temp ^ (uint16_t)a) & (temp ^ value) & 0x0080);
+
+	// - adjusted implementation to mos6502
+	temp = a - fetched - (GetFlag(C) == 1 ? 0 : 1);
+	SetFlag(Z, !(temp & 0x00FF));
+	SetFlag(V, (((a ^ temp) & 0x80) && (a ^ fetched) & 0x80));
 	SetFlag(N, temp & 0x0080);
+
+	if (GetFlag(D))
+	{
+		// - BCD implementation yet to be documented
+		if (((a & 0x0F) - (GetFlag(C) == 1 ? 0 : 1)) < (fetched & 0x0F))
+			temp -= 6;
+
+		if (temp > 0x99)
+		{
+			temp -= 0x60;
+		}
+	}
+
+	SetFlag(C, temp < 0x100);
+
 	a = temp & 0x00FF;
 	return 1;
 }
@@ -798,10 +809,10 @@ uint8_t olc6502::BCC()
 	{
 		cycles++;
 		addr_abs = pc + addr_rel;
-		
-		if((addr_abs & 0xFF00) != (pc & 0xFF00))
+
+		if ((addr_abs & 0xFF00) != (pc & 0xFF00))
 			cycles++;
-		
+
 		pc = addr_abs;
 	}
 	return 0;
@@ -912,7 +923,7 @@ uint8_t olc6502::BPL()
 uint8_t olc6502::BRK()
 {
 	//pc++;    -- duplicate to IMM()
-	
+
 	write(0x0100 + stkp, (pc >> 8) & 0x00FF);
 	stkp--;
 	write(0x0100 + stkp, pc & 0x00FF);
@@ -1086,7 +1097,7 @@ uint8_t olc6502::DEY()
 uint8_t olc6502::EOR()
 {
 	fetch();
-	a = a ^ fetched;	
+	a = a ^ fetched;
 	SetFlag(Z, a == 0x00);
 	SetFlag(N, a & 0x80);
 	return 1;
@@ -1198,7 +1209,7 @@ uint8_t olc6502::LSR()
 {
 	fetch();
 	SetFlag(C, fetched & 0x0001);
-	temp = fetched >> 1;	
+	temp = fetched >> 1;
 	SetFlag(Z, (temp & 0x00FF) == 0x0000);
 	SetFlag(N, temp & 0x0080);
 	if (lookup[opcode].addrmode == &olc6502::IMP)
@@ -1331,7 +1342,7 @@ uint8_t olc6502::RTS()
 	pc = (uint16_t)read(0x0100 + stkp);
 	stkp++;
 	pc |= (uint16_t)read(0x0100 + stkp) << 8;
-	
+
 	pc++;
 	return 0;
 }
@@ -1538,31 +1549,31 @@ std::map<uint16_t, std::string> olc6502::disassemble(uint16_t nStart, uint16_t n
 		else if (lookup[opcode].addrmode == &olc6502::ZP0)
 		{
 			lo = bus->cpuRead(addr, true); addr++;
-			hi = 0x00;												
+			hi = 0x00;
 			sInst += "$" + hex(lo, 2) + " {ZP0}";
 		}
 		else if (lookup[opcode].addrmode == &olc6502::ZPX)
 		{
 			lo = bus->cpuRead(addr, true); addr++;
-			hi = 0x00;														
+			hi = 0x00;
 			sInst += "$" + hex(lo, 2) + ", X {ZPX}";
 		}
 		else if (lookup[opcode].addrmode == &olc6502::ZPY)
 		{
 			lo = bus->cpuRead(addr, true); addr++;
-			hi = 0x00;														
+			hi = 0x00;
 			sInst += "$" + hex(lo, 2) + ", Y {ZPY}";
 		}
 		else if (lookup[opcode].addrmode == &olc6502::IZX)
 		{
 			lo = bus->cpuRead(addr, true); addr++;
-			hi = 0x00;								
+			hi = 0x00;
 			sInst += "($" + hex(lo, 2) + ", X) {IZX}";
 		}
 		else if (lookup[opcode].addrmode == &olc6502::IZY)
 		{
 			lo = bus->cpuRead(addr, true); addr++;
-			hi = 0x00;								
+			hi = 0x00;
 			sInst += "($" + hex(lo, 2) + "), Y {IZY}";
 		}
 		else if (lookup[opcode].addrmode == &olc6502::ABS)

@@ -17,7 +17,7 @@ using namespace std;
 
 uint8_t ram[0x10000];
 bool execute = true;
-uint16_t maxpc = 0;
+uint16_t maxpc = 0; // keeps track of the last instruction driving the tests / excluding subroutines
 uint16_t prevpc = 0;
 
 #define END_OF_MAIN 0x3469
@@ -50,10 +50,10 @@ void StatusWrite(uint16_t pc, uint8_t sp, uint8_t status, uint8_t A, uint8_t X, 
 	//if(ram[0x1fe]== 0xd2)
 	//	int magic = 42;
 
-	//if (pc == 0x09cf)
-	//	int magic = 42;
+	if (pc == 0x33ca)
+		int magic = 42;
 
-	if (pc == 0x3472)
+	if (pc == 0x3484)
 		int magic = 42;
 
 	if (pc == END_OF_MAIN)
