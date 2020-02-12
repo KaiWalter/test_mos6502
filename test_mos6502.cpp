@@ -47,6 +47,10 @@ void StatusWrite(uint16_t pc, uint8_t sp, uint8_t status, uint8_t A, uint8_t X, 
 
 	}
 
+	if (pc == 0x37c7)
+		int magic = 42;
+
+
 	if (pc == END_OF_MAIN)
 	{
 		execute = false;
@@ -54,7 +58,7 @@ void StatusWrite(uint16_t pc, uint8_t sp, uint8_t status, uint8_t A, uint8_t X, 
 		cout << std::setw(4) << std::setfill('0') << std::hex << (int)pc;
 		cout << " ** end of main" << endl;
 	}
-	else if (pc == prevpc)
+	else if (pc == prevpc && pc > 0x0400)
 	{
 		execute = false;
 		cout << "PC:";

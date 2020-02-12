@@ -88,6 +88,9 @@ void Bus::reset()
 
 void Bus::clock()
 {
-	SWrite(cpu.pc, cpu.stkp, cpu.status, cpu.a, cpu.x, cpu.y, 0,false);
+	if(cpu.complete())
+		SWrite(cpu.pc, cpu.stkp, cpu.status, cpu.a, cpu.x, cpu.y, 0, false);
+
 	cpu.clock();
+	nSystemClockCounter++;
 }
