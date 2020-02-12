@@ -7,14 +7,19 @@
 #include <filesystem>
 #include <fstream>
 
+#ifdef OLC
+#include "olc6502.h"
+#include "Bus.h"
+using namespace std;
+#else
 #include "mos6502.h"
+#endif
 
 uint8_t ram[0x10000];
 bool execute = true;
 uint16_t maxpc = 0;
 uint16_t prevpc = 0;
 
-//#define DETAILED
 #define END_OF_MAIN 0x3469
 
 uint8_t MemoryRead(uint16_t address)
@@ -62,7 +67,7 @@ void StatusWrite(uint16_t pc, uint8_t sp, uint8_t status, uint8_t A, uint8_t X, 
 	if (illegalOpcode)
 		execute = false;
 
-#if DETAILED
+#ifdef DETAILED
 	cout << "PC:";
 	cout << std::setw(4) << std::setfill('0') << std::hex << (int)pc;
 	cout << " MAXPC:";
@@ -94,7 +99,11 @@ int main()
 {
 	std::cout << "Start TEST" << endl;
 
+#if OLC
+	Bus bus(MemoryRead, MemoryWrite, StatusWrite);
+#else
 	mos6502 cpu(MemoryRead, MemoryWrite);
+#endif
 
 	std::string sFileName = "6502_functional_test.bin";
 
@@ -109,13 +118,21 @@ int main()
 	ram[0xFFFC] = 0x00;
 	ram[0xFFFD] = 0x04;
 
+#if OLC
+	bus.reset();
+#else
 	cpu.Reset();
-
 	uint64_t cycleCount = 0;
+#endif
+
 
 	while (execute)
 	{
+#if OLC
+		bus.clock();
+#else
 		cpu.Run(1, cycleCount, StatusWrite, mos6502::INST_COUNT);
+#endif
 	}
 }
 

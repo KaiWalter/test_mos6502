@@ -88,7 +88,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OLC;DETAILED;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -147,11 +147,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Bus.cpp" />
     <ClCompile Include="mos6502.cpp" />
+    <ClCompile Include="olc6502.cpp" />
     <ClCompile Include="test_mos6502.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Bus.h" />
     <ClInclude Include="mos6502.h" />
+    <ClInclude Include="olc6502.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
