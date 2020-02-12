@@ -207,7 +207,7 @@ void olc6502::irq()
 
 		// Then Push the status register to the stack
 		SetFlag(B, 0);
-		SetFlag(U, 1);
+		//SetFlag(U, 1);
 		SetFlag(I, 1);
 		write(0x0100 + stkp, status);
 		stkp--;
@@ -235,7 +235,7 @@ void olc6502::nmi()
 	stkp--;
 
 	SetFlag(B, 0);
-	SetFlag(U, 1);
+	//SetFlag(U, 1);
 	SetFlag(I, 1);
 	write(0x0100 + stkp, status);
 	stkp--;
@@ -273,7 +273,7 @@ void olc6502::clock()
 #endif
 		
 		// Always set the unused status flag bit to 1
-		SetFlag(U, true);
+		//SetFlag(U, true);
 		
 		// Increment program counter, we read the opcode byte
 		pc++;
@@ -293,7 +293,7 @@ void olc6502::clock()
 		cycles += (additional_cycle1 & additional_cycle2);
 
 		// Always set the unused status flag bit to 1
-		SetFlag(U, true);
+		//SetFlag(U, true);
 
 #ifdef LOGMODE
 		// This logger dumps every cycle the entire processor state for analysis.
@@ -894,7 +894,6 @@ uint8_t olc6502::BRK()
 {
 	pc++;
 	
-	SetFlag(I, 1);
 	write(0x0100 + stkp, (pc >> 8) & 0x00FF);
 	stkp--;
 	write(0x0100 + stkp, pc & 0x00FF);
@@ -903,6 +902,7 @@ uint8_t olc6502::BRK()
 	SetFlag(B, 1);
 	write(0x0100 + stkp, status);
 	stkp--;
+	SetFlag(I, 1);
 	SetFlag(B, 0);
 
 	pc = (uint16_t)read(0xFFFE) | ((uint16_t)read(0xFFFF) << 8);
@@ -1235,7 +1235,7 @@ uint8_t olc6502::PHP()
 {
 	write(0x0100 + stkp, status | B | U);
 	SetFlag(B, 0);
-	SetFlag(U, 0);
+	//SetFlag(U, 0);
 	stkp--;
 	return 0;
 }
