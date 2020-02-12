@@ -47,14 +47,16 @@ void StatusWrite(uint16_t pc, uint8_t sp, uint8_t status, uint8_t A, uint8_t X, 
 
 	}
 
+	// stop emulation at or before breaking tests
+
 	//if(ram[0x1fe]== 0xd2)
 	//	int magic = 42;
 
-	if (pc == 0x33ca)
-		int magic = 42;
+	//if (pc == 0x33ca)
+	//	int magic = 42;
 
-	if (pc == 0x3484)
-		int magic = 42;
+	//if (pc == 0x3484)
+	//	int magic = 42;
 
 	if (pc == END_OF_MAIN)
 	{

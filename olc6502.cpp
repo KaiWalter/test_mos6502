@@ -1,4 +1,19 @@
 /*
+	This is a modified version of
+		https://github.com/OneLoneCoder/olcNES/blob/master/Part%20%235%20-%20PPU%20Foregrounds/olc6502.cpp
+	to pass these functional tests
+		https://github.com/Klaus2m5/6502_65C02_functional_tests.
+
+	The original version was intended for NES emulation, which does not require decimal mode.
+	Modifications are required to be used in other 6502 emulators.
+
+	Modifications:
+	- Unused flag is only set in PHP operation
+	- ADC / SBC adapted to https://github.com/gianlucag/mos6502 implementation to cover decimal mode
+	- wonderful ADC / SBC removed - may not be totally accurate anymore
+
+	----------------------------------------------------------------------
+
 	olc6502 - An emulation of the 6502/2A03 processor
 	"Thanks Dad for believing computers were gonna be a big deal..." - javidx9
 
@@ -207,7 +222,6 @@ void olc6502::irq()
 
 		// Then Push the status register to the stack
 		SetFlag(B, 0);
-		//SetFlag(U, 1);
 		SetFlag(I, 1);
 		write(0x0100 + stkp, status);
 		stkp--;
@@ -235,7 +249,6 @@ void olc6502::nmi()
 	stkp--;
 
 	SetFlag(B, 0);
-	//SetFlag(U, 1);
 	SetFlag(I, 1);
 	write(0x0100 + stkp, status);
 	stkp--;
@@ -272,9 +285,6 @@ void olc6502::clock()
 		uint16_t log_pc = pc;
 #endif
 
-		// Always set the unused status flag bit to 1
-		//SetFlag(U, true);
-
 		// Increment program counter, we read the opcode byte
 		pc++;
 
@@ -291,9 +301,6 @@ void olc6502::clock()
 		// The addressmode and opcode may have altered the number
 		// of cycles this instruction requires before its completed
 		cycles += (additional_cycle1 & additional_cycle2);
-
-		// Always set the unused status flag bit to 1
-		//SetFlag(U, true);
 
 #ifdef LOGMODE
 		// This logger dumps every cycle the entire processor state for analysis.
@@ -597,64 +604,6 @@ uint8_t olc6502::fetch()
 // Instruction: Add with Carry In
 // Function:    A = A + M + C
 // Flags Out:   C, V, N, Z
-//
-// Explanation:
-// The purpose of this function is to add a value to the accumulator and a carry bit. If
-// the result is > 255 there is an overflow setting the carry bit. Ths allows you to
-// chain together ADC instructions to add numbers larger than 8-bits. This in itself is
-// simple, however the 6502 supports the concepts of Negativity/Positivity and Signed Overflow.
-//
-// 10000100 = 128 + 4 = 132 in normal circumstances, we know this as unsigned and it allows
-// us to represent numbers between 0 and 255 (given 8 bits). The 6502 can also interpret 
-// this word as something else if we assume those 8 bits represent the range -128 to +127,
-// i.e. it has become signed.
-//
-// Since 132 > 127, it effectively wraps around, through -128, to -124. This wraparound is
-// called overflow, and this is a useful to know as it indicates that the calculation has
-// gone outside the permissable range, and therefore no longer makes numeric sense.
-//
-// Note the implementation of ADD is the same in binary, this is just about how the numbers
-// are represented, so the word 10000100 can be both -124 and 132 depending upon the 
-// context the programming is using it in. We can prove this!
-//
-//  10000100 =  132  or  -124
-// +00010001 = + 17      + 17
-//  ========    ===       ===     See, both are valid additions, but our interpretation of
-//  10010101 =  149  or  -107     the context changes the value, not the hardware!
-//
-// In principle under the -128 to 127 range:
-// 10000000 = -128, 11111111 = -1, 00000000 = 0, 00000000 = +1, 01111111 = +127
-// therefore negative numbers have the most significant set, positive numbers do not
-//
-// To assist us, the 6502 can set the overflow flag, if the result of the addition has
-// wrapped around. V <- ~(A^M) & A^(A+M+C) :D lol, let's work out why!
-//
-// Let's suppose we have A = 30, M = 10 and C = 0
-//          A = 30 = 00011110
-//          M = 10 = 00001010+
-//     RESULT = 40 = 00101000
-//
-// Here we have not gone out of range. The resulting significant bit has not changed.
-// So let's make a truth table to understand when overflow has occurred. Here I take
-// the MSB of each component, where R is RESULT.
-//
-// A  M  R | V | A^R | A^M |~(A^M) | 
-// 0  0  0 | 0 |  0  |  0  |   1   |
-// 0  0  1 | 1 |  1  |  0  |   1   |
-// 0  1  0 | 0 |  0  |  1  |   0   |
-// 0  1  1 | 0 |  1  |  1  |   0   |  so V = ~(A^M) & (A^R)
-// 1  0  0 | 0 |  1  |  1  |   0   |
-// 1  0  1 | 0 |  0  |  1  |   0   |
-// 1  1  0 | 1 |  1  |  0  |   1   |
-// 1  1  1 | 0 |  0  |  0  |   1   |
-//
-// We can see how the above equation calculates V, based on A, M and R. V was chosen
-// based on the following hypothesis:
-//       Positive Number + Positive Number = Negative Result -> Overflow
-//       Negative Number + Negative Number = Positive Result -> Overflow
-//       Positive Number + Negative Number = Either Result -> Cannot Overflow
-//       Positive Number + Positive Number = Positive Result -> OK! No Overflow
-//       Negative Number + Negative Number = Negative Result -> OK! NO Overflow
 
 uint8_t olc6502::ADC()
 {
@@ -670,7 +619,7 @@ uint8_t olc6502::ADC()
 
 	if (GetFlag(D))
 	{
-		// - BCD implementation yet to be documented
+		// BCD variation
 		if (((a & 0xF) + (fetched & 0xF) + (uint16_t)GetFlag(C)) > 9)
 			temp += 6;
 
@@ -707,28 +656,6 @@ uint8_t olc6502::ADC()
 // Instruction: Subtraction with Borrow In
 // Function:    A = A - M - (1 - C)
 // Flags Out:   C, V, N, Z
-//
-// Explanation:
-// Given the explanation for ADC above, we can reorganise our data
-// to use the same computation for addition, for subtraction by multiplying
-// the data by -1, i.e. make it negative
-//
-// A = A - M - (1 - C)  ->  A = A + -1 * (M - (1 - C))  ->  A = A + (-M + 1 + C)
-//
-// To make a signed positive number negative, we can invert the bits and add 1
-// (OK, I lied, a little bit of 1 and 2s complement :P)
-//
-//  5 = 00000101
-// -5 = 11111010 + 00000001 = 11111011 (or 251 in our 0 to 255 range)
-//
-// The range is actually unimportant, because if I take the value 15, and add 251
-// to it, given we wrap around at 256, the result is 10, so it has effectively 
-// subtracted 5, which was the original intention. (15 + 251) % 256 = 10
-//
-// Note that the equation above used (1-C), but this got converted to + 1 + C.
-// This means we already have the +1, so all we need to do is invert the bits
-// of M, the data(!) therfore we can simply add, exactly the same way we did 
-// before.
 
 uint8_t olc6502::SBC()
 {
@@ -737,14 +664,14 @@ uint8_t olc6502::SBC()
 	// Operating in 16-bit domain to capture carry out
 
 	// - adjusted implementation to mos6502
-	temp = a - fetched - (GetFlag(C) == 1 ? 0 : 1);
+	temp = (uint16_t)a - (uint16_t)fetched - (GetFlag(C) == 1 ? 0 : 1);
 	SetFlag(Z, !(temp & 0x00FF));
 	SetFlag(V, (((a ^ temp) & 0x80) && (a ^ fetched) & 0x80));
 	SetFlag(N, temp & 0x0080);
 
 	if (GetFlag(D))
 	{
-		// - BCD implementation yet to be documented
+		// BCD variation
 		if (((a & 0x0F) - (GetFlag(C) == 1 ? 0 : 1)) < (fetched & 0x0F))
 			temp -= 6;
 
@@ -1265,7 +1192,6 @@ uint8_t olc6502::PHP()
 {
 	write(0x0100 + stkp, status | B | U);
 	SetFlag(B, 0);
-	//SetFlag(U, 0);
 	stkp--;
 	return 0;
 }

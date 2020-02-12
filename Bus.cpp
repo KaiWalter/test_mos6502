@@ -1,4 +1,8 @@
 /*
+	stripped version of https://github.com/OneLoneCoder/olcNES/blob/master/Part%20%235%20-%20PPU%20Foregrounds/Bus.h
+*/
+
+/*
 	olc::NES - System Bus
 	"Thanks Dad for believing computers were gonna be a big deal..." - javidx9
 
