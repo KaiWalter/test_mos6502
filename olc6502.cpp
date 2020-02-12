@@ -665,18 +665,37 @@ uint8_t olc6502::ADC()
 	// carry bit, which will exist in bit 8 of the 16-bit word
 	temp = (uint16_t)a + (uint16_t)fetched + (uint16_t)GetFlag(C);
 	
-	// The carry flag out exists in the high byte bit 0
-	SetFlag(C, temp > 255);
-	
 	// The Zero flag is set if the result is 0
 	SetFlag(Z, (temp & 0x00FF) == 0);
-	
-	// The signed Overflow flag is set based on all that up there! :D
-	SetFlag(V, (~((uint16_t)a ^ (uint16_t)fetched) & ((uint16_t)a ^ (uint16_t)temp)) & 0x0080);
-	
-	// The negative flag is set to the most significant bit of the result
-	SetFlag(N, temp & 0x80);
-	
+
+	if (GetFlag(D))
+	{
+		// - BCD implementation yet to be documented
+		if (((a & 0xF) + (fetched & 0xF) + (uint16_t)GetFlag(C)) > 9)
+			temp += 6;
+
+		SetFlag(N, temp & 0x80);
+
+		SetFlag(V, (~((uint16_t)a ^ (uint16_t)fetched) & ((uint16_t)a ^ (uint16_t)temp)) & 0x0080);
+
+		if (temp > 0x99)
+		{
+			temp += 96;
+		}
+		SetFlag(C, temp > 0x99);
+	}
+	else
+	{
+		// The carry flag out exists in the high byte bit 0
+		SetFlag(C, temp > 255);
+
+		// The signed Overflow flag is set based on all that up there! :D
+		SetFlag(V, (~((uint16_t)a ^ (uint16_t)fetched) & ((uint16_t)a ^ (uint16_t)temp)) & 0x0080);
+
+		// The negative flag is set to the most significant bit of the result
+		SetFlag(N, temp & 0x80);
+	}
+
 	// Load the result into the accumulator (it's 8-bit dont forget!)
 	a = temp & 0x00FF;
 	
