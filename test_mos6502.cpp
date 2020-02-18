@@ -37,7 +37,8 @@ void StatusWrite(uint16_t pc, uint8_t sp, uint8_t status, uint8_t A, uint8_t X, 
 	if (pc > maxpc&& pc < END_OF_MAIN)
 	{
 		maxpc = pc;
-#ifndef DETAILED
+#if DETAILED
+#else
 		auto givemetime = chrono::system_clock::to_time_t(chrono::system_clock::now());
 		char printtime[30];
 		ctime_s(printtime, 30, &givemetime);
@@ -47,17 +48,7 @@ void StatusWrite(uint16_t pc, uint8_t sp, uint8_t status, uint8_t A, uint8_t X, 
 
 	}
 
-	// stop emulation at or before breaking tests
-
-	//if(ram[0x1fe]== 0xd2)
-	//	int magic = 42;
-
-	//if (pc == 0x33ca)
-	//	int magic = 42;
-
-	//if (pc == 0x3484)
-	//	int magic = 42;
-
+	// end of test program reached
 	if (pc == END_OF_MAIN)
 	{
 		execute = false;
@@ -65,6 +56,7 @@ void StatusWrite(uint16_t pc, uint8_t sp, uint8_t status, uint8_t A, uint8_t X, 
 		cout << std::setw(4) << std::setfill('0') << std::hex << (int)pc;
 		cout << " ** end of main" << endl;
 	}
+	// stop emulation at or before breaking tests
 	else if (pc == prevpc && pc > 0x0400)
 	{
 		execute = false;
@@ -95,12 +87,6 @@ void StatusWrite(uint16_t pc, uint8_t sp, uint8_t status, uint8_t A, uint8_t X, 
 	cout << std::setw(2) << std::hex << (int)Y;
 	cout << " | Op:";
 	cout << std::setw(2) << std::hex << (int)opcode << endl;
-
-	//if (pc == 0x3343 && ram[0x000d] > 0xFE)
-	//	cout << std::setw(4) << std::setfill('0') << std::hex << (int)ram[0x000d] << "============================================================" << endl;
-
-	//if (pc == 0x3345)
-	//	cout << "============================================================" << endl;
 #endif
 
 	prevpc = pc;
